@@ -1,0 +1,118 @@
+---
+title: "PMarquardt_HW4"
+author: "Paul Marquardt"
+date: "June 6, 2018"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Question 1
+### Question 1a: Install the fivethirtyeight package
+```{r}
+install.packages(fivethirtyeight)
+```
+
+### Question 1b: In the listing of Data sets in package ‘fivethirtyeight,’ assign the 22nd data set to
+an object ‘df.’
+```{r}
+library(fivethirtyeight)
+df <- college_recent_grads
+```
+### Question 1c: Use a more detailed list of the data sets to write out the URL in a comment to the
+related news story.
+```{r}
+
+```
+### Question 1d: Using R command(s), give the dimensions and column names of this data frame
+```{r}
+dim(college_recent_grads)
+colnames(college_recent_grads)
+```
+## Question 2
+### Question 2a: Write an R command that gives you the column names of the data frame. Right after
+that, write one that counts the number of columns but not rows. Hint: The number
+should match one of your numbers in Question 1d for dimensions.
+```{r}
+library(plyr)
+cn <- colnames(college_recent_grads)
+df <- data.frame(cn)
+count(df)
+```
+
+### Question 2b: . Generate a count of each unique major_category in the data frame. I recommend using
+libraries to help. I have demonstrated one briefly in live-session. To be clear, this
+should look like a matrix or data frame containing the major_category and the
+frequency it occurs in the dataset. Assign it to major_count.
+```{r}
+mc <- data.frame(college_recent_grads)
+# ddply(mc$major_category,summarise,unique_categories=length(unique(order_no)))
+ library(dplyr)
+mc %>%
+   group_by(major_category) %>%
+  summarise(n_distinct(major_category))
+```
+### Question 2c: To make things easier to read, enter par(las=2) before your plot to make the text
+perpendicular to the axis. Make a barplot of major_count. Make sure to label the title
+with something informative (check the vignette if you need), label the x and y axis, and
+make it any color other than grey. Assign the major_category labels to their respective
+bar. Flip the barplot horizontally so that bars extend to the right, not upward. All of
+these options can be done in a single pass of barplot(). Note: It’s okay if it’s wider than
+the preview pane.
+```{r}
+library(fivethirtyeight)
+ds <- college_recent_grads
+ds
+# vignette("college_recent_grads", package = "fivethirtyeight")
+mjc <- c(ds$rank, ds$major, ds$major_category, ds$total)
+mjc
+barplot(height = mjc,
+  main = "Majors and thier respective ranks",
+  xlab = "rank",
+  ylab = "major",
+  col = "red"
+  )
+```
+### Question 2d: Write the fivethirtyeight data to a csv file. Make sure that it does not have row labels
+```{r}
+crg <- data.frame(college_recent_grads)
+# crg
+# getwd()
+write.csv(crg, file = "HW3Question2d.csv",row.names = FALSE)
+```
+### Question 3a: Start a new repository on GitHub for your SMU MSDS homework. On your local
+device, make sure there is a directory for Homework at the minimum; you are
+welcome to add whatever you would like to this repo in addition to your requirements
+here
+```{r}
+# git remote add origin https://github.com/ubergeekin/MSDS6306.git
+# git pull origin master
+dir.create("homework")
+list.files()
+```
+### Question 3b: . Create a README.md file which explains the purpose of the repository, the topics
+included, the sources for the material you post, and contact information in case of
+questions. Remember, the one in the root directory should be general. You are
+welcome to make short READMEs for each assignment individually in other folders.
+```{r}
+
+```
+
+### Question 3c: In one (or more) of the nested directories, post your RMarkdown script, HTML file,
+and data from ‘fivethirtyeight.’ Make sure that in your README or elsewhere that
+you credit fivethirtyeight in some way
+```{r}
+
+```
+### Question 3d: In your RMarkdown script, please provide the link to this GitHub so the grader can see
+it.
+```{r}
+
+```
+### Question 4: Please find the swirl output in the file upload section of assignments :)
+```{r}
+
+```
