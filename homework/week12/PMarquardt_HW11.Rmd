@@ -1,0 +1,144 @@
+---
+title: "PMarquardt_HW11"
+author: "Paul Marquardt"
+date: "July 26, 2018"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+getwd()
+library(dplyr)
+library(kableExtra)
+library(ggplot2)
+library(fpp2) 
+library(dygraphs)
+library(xts)
+```
+
+
+# Question 1: Brief Financial Data
+Natively  in  R,  you  have  access  to  sample  data  sets  of  prominent  stocks  over  time.    We'll  be  using  EuStockMarkets  for  this  question.    Type  help(EuStockMarkets)  to  learn  more.    From  these  data,  pull  specifically  the  DAX  index.For  all  questions  in  this  assignment,  you're  welcome  to  normalize  (or  don't!)  how  you  see  fit,  but,  if  you  choose  to,  please  document  what  you're  doing  and  why  for  the  grader.It's  not  necessary  forthe  purpose  of  this  assignment.
+
+a) Obtain the DAX Index from EuStockMarkets dataset
+
+```{r}
+dax <- EuStockMarkets[,"DAX"]
+str(dax)
+```
+
+### b)These  are  annual  European  Stock  Data  from  1990  onward.    Create  a  rudimentary  plot  of  the  data.    Make  the  line  blue.    Give  an  informative  title.    Label  the  axes  accurately.    In  1997,  an  event  happened  you  want  to  indicate;  add  a  vertical  red  line  to  your  plot  which  divides  pre-1997  and  post-1997  information.
+
+```{r}
+plot(
+    dax,
+    main="EU DAX Index from complete series",
+    xlab="Year",
+    ylab="Index Price",
+    col="blue"
+)
+abline(
+    v=1997,
+    color="red"
+)
+```
+
+### c) Decompose  the  time  series  into  its  components  (i.e.,  trend,  seasonality,  random).    Keep  in  mind  that  this  is  a  multiplicative  model  you  want.    Create  a  plot  of  all  decomposed  components.    As  before,  make  all  lines  blue  and  have  a  vertical  divider  at  the  year  1997.
+
+```{r}
+dax.decompose.multi <- decompose(dax,type="multiplicative")
+plot(dax.decompose.multi,col="blue")
+abline(
+    v=1997,
+    col="red"
+)
+```
+
+# Question 2: Temperature Data
+### a) Using  the  maxtemp  datasetgranted  by  loading  fpp2,  there  are  maximum  annual  temperature  data  in  Celsius.    For  more  information,  use  help(maxtemp).    To  see  what  you're  looking  at,  execute  the  command  in  'Examples'  in  the  help  document
+
+```{r}
+autoplot(maxtemp)
+```
+
+### b) We  are  only  concerned  with  information  after  1990.    Please  eliminate  unwanted  information  or  subset  information  we  care  about
+
+```{r}
+temps <- window(maxtemp, start = 1990)
+```
+
+### c) Utilize  SES  to  predict  the  next  five  years  of  maximum  temperatures  in  Melbourne.    Plot  this  information,  including  the  prior  information  and  the  forecast.    Add  the  predicted  value  line  across  1990-present  as  a  separate  line,  preferably  blue.    So,  to  review,  you  should  have  your  fit,  the  predicted  value  line  overlaying  it,  and  a  forecast  
+2through  2021,  all  on  one  axis.  Find  the  AICc  of  this  fitted  model.    You  will  use  that  information  later.
+
+```{r}
+temps.ses <- ses(temps, h=5)
+plot(temps.ses)
+lines(temps.ses$fitted,col="blue")
+temps.ses$model$aicc
+```
+
+### d) Now  use  a  dampedHolt'slinear  trend  to  also  predict  out  five  years.Make  sure  initial="optimal."    As  above,  create  a  similar  plot  to  1C,  but  use  the  Holt  fit  instead.
+
+```{r}
+temps.holt <- holt(temps, h=5, damped = TRUE, inital = "optimal")
+plot(temps.holt)
+lines(temps.holt$fitted,col="blue")
+temps.holt$model$aicc
+```
+
+### e) Compare  the  AICc  of  the  ses()  and  holt()  models.    Which  model  is  better  here?
+
+```{r}
+temps.ses$model$aicc
+temps.holt$model$aicc
+```
+
+SES comprises the best model.
+
+# Question 3: The Wands Choose the Wizard
+### a) Utilize  the  dygraphslibrary.    Read  in  both  Unit11TimeSeries_Ollivander  and  _Gregorovitch.csv as  two  different  data  frames.    They  do  not  have  headers,  so  make  sure  you  account  for  that.This  is  a  time  series  of  Wands  sold  over  years
+
+```{r}
+gregorovitch <- read.csv("Unit11TimeSeries_Gregorovitch.csv")
+ollivander <- read.csv("Unit11TimeSeries_Ollivander.csv")
+
+names(gregorovitch) <- c("year","wands_sold")
+names(ollivander) <- c("year","wands_sold")
+
+str(gregorovitch)
+str(ollivander)
+```
+
+### b) You  don't  have  your  information  in  the  proper  format!    In  both  data  sets,  you'll  need  to  first  convert  the  date-like  variable  to  an  actual  Date  class.
+
+```{r}
+gregorovitch$year <- as.Date(gregorovitch$year, "%m/%d/%Y")
+ollivander$year <- as.Date(gregorovitch$year, "%m/%d/%Y")
+
+str(gregorovitch)
+str(ollivander)
+```
+
+### c) Use  the  library  xts  (and  the  xts()  function  in  it)  to  make  each  data  frame  an  xts  object  (effectively,  a  time  series).    You'll  want  to order.by the  Date  variable.
+
+```{r}
+gregorovitch.ts <- xts(gregorovitch$wands_sold, order.by=gregorovitch$year)
+ollivander.ts <- xts(ollivander$wands_sold, order.by=ollivander$year)
+str(gregorovitch.ts)
+str(ollivander.ts)
+```
+
+### d) Bind  the  two  xts  objects  together  and  create  a  dygraph  from  it.Utilize  the  help()  index  if  you're  stuck
+
+```{r}
+wands.sold <- merge(gregorovitch.ts,ollivander.ts)
+
+dygraph(wands.sold,main="Olivander vs. Gregorovitch Wand Sales",xlab="Year",ylab="Sales") %>%
+    dySeries("ollivander.ts", label="Gregorovitch", col="red") %>%
+    dySeries("gregorovitch.ts", label="Ollivander",col="blue") %>%
+    dyRangeSelector() %>%
+    dyShading(from="1995-01-01",to="1999-01-01") %>%
+    dyHighlight(highlightSeriesOpts = list( strokeWidth = 3 ) )
+```
